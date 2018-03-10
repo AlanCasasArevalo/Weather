@@ -30,4 +30,14 @@ dependencies {
     testImplementation 'junit:junit:4.12'
     androidTestImplementation 'com.android.support.test:runner:1.0.1'
     androidTestImplementation 'com.android.support.test.espresso:espresso-core:3.0.1'
+
+    //To convert json into our models (see attached: http://square.github.io/retrofit/)
+    implementation 'com.squareup.retrofit2:retrofit:2.2.0'
+
+    //To convert GSON into our models
+    implementation 'com.squareup.retrofit2:converter-gson:2.2.0'
+
+    //To convert json into our models (see attached: https://github.com/google/gson)
+    implementation 'com.google.code.gson:gson:2.8.2'
+
 }
