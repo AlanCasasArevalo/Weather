@@ -1,5 +1,7 @@
-package alancasasarevalo.com.weather
+package alancasasarevalo.com.weather.network
 
+import alancasasarevalo.com.weather.model.CitySearched
+import alancasasarevalo.com.weather.model.Weather
 import retrofit2.Call
 import retrofit2.http.GET
 import retrofit2.http.Query

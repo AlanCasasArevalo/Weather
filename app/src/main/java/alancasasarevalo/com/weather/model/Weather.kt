@@ -1,4 +1,4 @@
-package alancasasarevalo.com.weather
+package alancasasarevalo.com.weather.model
 
 import io.realm.RealmObject
 import java.io.Serializable

@@ -1,7 +1,6 @@
 package alancasasarevalo.com.weather.deserializer
 
-import alancasasarevalo.com.weather.CitySearched
-import alancasasarevalo.com.weather.Weather
+import alancasasarevalo.com.weather.model.CitySearched
 import com.google.gson.JsonDeserializationContext
 import com.google.gson.JsonDeserializer
 import com.google.gson.JsonElement

@@ -1,6 +1,7 @@
-package alancasasarevalo.com.weather
+package alancasasarevalo.com.weather.network
 
 import alancasasarevalo.com.weather.deserializer.MyDeserializer
+import alancasasarevalo.com.weather.model.CitySearched
 import com.google.gson.GsonBuilder
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory

@@ -1,19 +1,41 @@
 package alancasasarevalo.com.weather
 
+import alancasasarevalo.com.weather.adapters.CitySearchedAdapter
+import alancasasarevalo.com.weather.model.CitySearched
+import alancasasarevalo.com.weather.model.Weather
+import alancasasarevalo.com.weather.network.APIToArrayObjects
+import alancasasarevalo.com.weather.network.APIToSimplesObjects
+import alancasasarevalo.com.weather.network.WeatherService
 import android.os.Bundle
 import android.support.design.widget.FloatingActionButton
 import android.support.v7.app.AlertDialog
 import android.support.v7.app.AppCompatActivity
 import android.view.LayoutInflater
+import android.view.View
+import android.widget.AdapterView
 import android.widget.EditText
+import android.widget.ListView
 import android.widget.Toast
 import io.realm.Realm
+import io.realm.RealmChangeListener
 import io.realm.RealmResults
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
 
-class MainActivity : AppCompatActivity() {
+class MainActivity : AppCompatActivity(), RealmChangeListener<RealmResults<CitySearched>>, AdapterView.OnItemClickListener {
+
+
+
+    override fun onItemClick(parent: AdapterView<*>?, view: View?, position: Int, id: Long) {
+
+        // TODO: Hacer algo para ir a la siguiente actividad
+//        val intent = Intent(this, NoteActivity::class.java)
+//        intent.putExtra("id", boardsRealmResult?.get(position)?.id)
+//        startActivity(intent)
+    }
+
+    var citySearched:CitySearched? = null
 
     val service: WeatherService = APIToSimplesObjects.getApiRetrofit().create(WeatherService::class.java)
     val serviceForSecondCity: WeatherService = APIToArrayObjects.getApiArrayObjectsRetrofit().create(WeatherService::class.java)
@@ -21,6 +43,8 @@ class MainActivity : AppCompatActivity() {
     var realm: Realm? = null
     var citySearchedRealmResult: RealmResults<CitySearched>? = null
 
+    var listView: ListView? = null
+    var citySearchedAdapter: CitySearchedAdapter? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -31,10 +55,21 @@ class MainActivity : AppCompatActivity() {
         realm = Realm.getDefaultInstance()
 
         citySearchedRealmResult = realm?.where(CitySearched::class.java)?.findAll()
+//
+//        realm?.executeTransaction {
+//            it.deleteAll()
+//        }
 
 
-        parseWithObjectsIntoArrayObjects()
-        parseWithNormalObjects()
+
+
+//        parseWithObjectsIntoArrayObjects()
+
+        citySearchedAdapter = CitySearchedAdapter(citySearchedRealmResult as List<CitySearched>, this, R.layout.list_view_city_item)
+
+        listView = findViewById(R.id.activity_board_list_view)
+
+        listView?.adapter = citySearchedAdapter
 
 
         floatingButton.setOnClickListener {
@@ -43,11 +78,12 @@ class MainActivity : AppCompatActivity() {
 
     }
 
+    fun createNewCitytoSearch(cityName: String) {
 
-    fun createNewCitytoSearch(cityName: String){
-        realm?.executeTransaction {
-            val newCityToSearch = CitySearched(cityName)
-            it.copyToRealm(newCityToSearch)
+        if (cityName.isEmpty()) {
+
+        } else {
+            parseWithObjectsIntoArrayObjects(cityName)
         }
     }
 
@@ -75,49 +111,67 @@ class MainActivity : AppCompatActivity() {
                 .show()
     }
 
-    fun parseWithObjectsIntoArrayObjects(){
-        val cityCall : Call<CitySearched> = serviceForSecondCity.getACityToSearch("Toledo",
-                "20",
-                "0",
-                "en",
-                true,
-                "FULL",
-                "ilgeonamessample")
+    fun parseWithObjectsIntoArrayObjects(cityToSearch: String) {
 
-        cityCall.enqueue(object : Callback<CitySearched> {
+        if (cityToSearch.isEmpty()) {
 
-            override fun onResponse(call: Call<CitySearched>?, response: Response<CitySearched>?) {
-                val cityParsed = response?.body()
-            }
+        } else {
 
-            override fun onFailure(call: Call<CitySearched>?, t: Throwable?) {
-                Toast.makeText(MainActivity().baseContext, "Error en el parseo de GSON con Retrofit", Toast.LENGTH_LONG).show()
-            }
+            val cityCall: Call<CitySearched> = serviceForSecondCity.getACityToSearch(cityToSearch,
+                    "20",
+                    "0",
+                    "en",
+                    true,
+                    "FULL",
+                    "ilgeonamessample")
 
-        })
+            cityCall.enqueue(object : Callback<CitySearched> {
+
+                override fun onResponse(call: Call<CitySearched>?, response: Response<CitySearched>?) {
+                    val cityParsed = response?.body()
+                    citySearched = cityParsed
+                    realm?.executeTransaction {
+                        it.copyToRealm(citySearched)
+                    }
+                }
+
+                override fun onFailure(call: Call<CitySearched>?, t: Throwable?) {
+                    Toast.makeText(MainActivity().baseContext, "Error en el parseo de GSON con Retrofit", Toast.LENGTH_LONG).show()
+                }
+
+            })
+
+        }
 
     }
 
-    fun parseWithNormalObjects(){
-        val cityCall : Call<Weather> = service.getWeatherForACity(
-                "-24.668868272392903",
-                "-24.758353947607095",
-                "-53.69381916647705",
-                "-53.792291953522955",
-                "ilgeonamessample"
-        )
+    fun parseWithNormalObjects(citySearched: CitySearched) {
 
-        cityCall.enqueue(object : Callback<Weather> {
+        if (citySearched == null) {
 
-            override fun onResponse(call: Call<Weather>?, response: Response<Weather>?) {
-                val cityParsed = response?.body()
-            }
+        } else {
+            val cityCall: Call<Weather> = service.getWeatherForACity(
+                    citySearched.north!!,
+                    citySearched.south!!,
+                    citySearched.east!!,
+                    citySearched.west!!,
+                    "ilgeonamessample"
+            )
+            cityCall.enqueue(object : Callback<Weather> {
 
-            override fun onFailure(call: Call<Weather>?, t: Throwable?) {
-                Toast.makeText(MainActivity().baseContext, "Error en el parseo de GSON con Retrofit", Toast.LENGTH_LONG).show()
-            }
+                override fun onResponse(call: Call<Weather>?, response: Response<Weather>?) {
+                    val cityParsed = response?.body()
+                }
 
-        })
+                override fun onFailure(call: Call<Weather>?, t: Throwable?) {
+                    Toast.makeText(MainActivity().baseContext, "Error en el parseo de GSON con Retrofit", Toast.LENGTH_LONG).show()
+                }
+
+            })
+        }
+    }
+    override fun onChange(t: RealmResults<CitySearched>?) {
+        citySearchedAdapter?.notifyDataSetChanged()
     }
 
 }

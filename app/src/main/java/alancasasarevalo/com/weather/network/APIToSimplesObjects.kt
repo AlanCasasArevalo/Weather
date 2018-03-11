@@ -1,4 +1,4 @@
-package alancasasarevalo.com.weather
+package alancasasarevalo.com.weather.network
 
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
