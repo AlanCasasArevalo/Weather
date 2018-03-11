@@ -4,6 +4,9 @@ apply plugin: 'kotlin-android'
 
 apply plugin: 'kotlin-android-extensions'
 
+apply plugin: 'realm-android'
+
+
 android {
     compileSdkVersion 26
     defaultConfig {
@@ -39,5 +42,8 @@ dependencies {
 
     //To convert json into our models (see attached: https://github.com/google/gson)
     implementation 'com.google.code.gson:gson:2.8.2'
+
+    //Material design library
+    implementation 'com.android.support:design:26.1.0'
 
 }

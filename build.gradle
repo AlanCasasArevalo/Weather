@@ -12,6 +12,10 @@ buildscript {
 
         // NOTE: Do not place your application dependencies here; they belong
         // in the individual module build.gradle files
+
+        //This library is necessary to use Realm
+        classpath "io.realm:realm-gradle-plugin:4.3.3"
+
     }
 }
 
