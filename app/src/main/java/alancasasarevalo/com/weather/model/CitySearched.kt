@@ -1,11 +1,9 @@
 package alancasasarevalo.com.weather.model
 
 import io.realm.RealmObject
-import io.realm.annotations.PrimaryKey
 import java.io.Serializable
 
 open class CitySearched(
-        @PrimaryKey
                           var name: String? = null,
                           var east : String? = null,
                           var south: String? = null,
