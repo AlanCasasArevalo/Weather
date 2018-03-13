@@ -22,6 +22,12 @@ class WeatherActivity : AppCompatActivity() {
     var realm: Realm? = null
     var cityName: String? = null
     var citySearched: CitySearched? = null
+    var weather: Weather? = null
+    var east: String? = null
+    var west: String? = null
+    var south: String? = null
+    var north: String? = null
+
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -31,14 +37,19 @@ class WeatherActivity : AppCompatActivity() {
 
         if (intent.extras != null) {
             cityName = intent.extras.getString("name")
+            citySearched = realm?.where(CitySearched::class.java)?.equalTo("name", cityName)?.findFirst()
+
+            east = citySearched?.east
+            west = citySearched?.west
+            south = citySearched?.south
+            north = citySearched?.north
+
+            if (east != null && west != null && south != null && north != null) {
+//                parseWithNormalObjects(east!!, west!!, south!!, north!!)
+            }
+
+            parseWithNormalObj()
         }
-
-        citySearched = realm?.where(CitySearched::class.java)?.equalTo("name", cityName)?.findFirst()
-
-        if (citySearched != null) {
-            parseWithNormalObjects(citySearched!!)
-        }
-
 
         if (supportFragmentManager.findFragmentById(R.id.weather_activity_google_fragment) == null || supportFragmentManager.findFragmentById(R.id.weather_activity_list_fragment) == null) {
             supportFragmentManager
@@ -50,43 +61,77 @@ class WeatherActivity : AppCompatActivity() {
 
     }
 
-    fun parseWithNormalObjects(citySearched: CitySearched) {
-        if (citySearched != null) {
+    fun parseWithNormalObjects(east: String, west: String, south: String, north: String) {
 
-            Thread(Runnable {
+        Thread(Runnable {
 
-                DispatchOnMainThread(Runnable {
-                    val cityCall: Call<Weather> = service.getWeatherForACity(
-                            citySearched.north!!,
-                            citySearched.south!!,
-                            citySearched.east!!,
-                            citySearched.west!!,
-                            "ilgeonamessample"
-                    )
-                    cityCall.enqueue(object : Callback<Weather> {
+            DispatchOnMainThread(Runnable {
+                val cityCall: Call<Weather> = service.getWeatherForACity(
+                        north,
+                        south,
+                        east,
+                        west,
+                        "ilgeonamessample"
+                )
+                cityCall.enqueue(object : Callback<Weather> {
 
-                        override fun onResponse(call: Call<Weather>?, response: Response<Weather>?) {
-                            val cityParsed = response?.body()
+                    override fun onResponse(call: Call<Weather>?, response: Response<Weather>?) {
+                        val weatherParsed = response?.body()
+                        weather = weatherParsed!!
+
+                        weatherParsed.humidity
+                        weatherParsed.temperature
+
+
+                        weather?.temperature
+                        weather?.humidity
+
+
+                        realm?.executeTransaction {
+
+                            weather?.latitude
+                            weather?.Longitude
+                            weather?.humidity
+                            weather?.temperature
+
+                            it.copyToRealm(weather)
                         }
 
-                        override fun onFailure(call: Call<Weather>?, t: Throwable?) {
-                            Toast.makeText(CitiesActivity().baseContext, "Error en el parseo de GSON con Retrofit", Toast.LENGTH_LONG).show()
-                        }
+                        realm?.close()
 
-                    })
+                    }
+
+                    override fun onFailure(call: Call<Weather>?, t: Throwable?) {
+                        Toast.makeText(CitiesActivity().baseContext, "Error en el parseo de GSON con Retrofit", Toast.LENGTH_LONG).show()
+                    }
 
                 })
 
-            }).run()
+            })
+
+        }).run()
 
 
-        }
+    }
+
+    fun parseWithNormalObj(){
+        val cityCall : Call<Weather> = service.getWeatherForACity("41.16", "39.88", "-3.05","-4.57","ilgeonamessample")
+
+        cityCall.enqueue(object : Callback<Weather>{
+
+            override fun onResponse(call: Call<Weather>?, response: Response<Weather>?) {
+                val cityParsed = response?.body()
+            }
+
+            override fun onFailure(call: Call<Weather>?, t: Throwable?) {
+                Toast.makeText(WeatherActivity().baseContext, "Error en el parseo de GSON con Retrofit",Toast.LENGTH_LONG).show()
+            }
+
+        })
+
     }
 
 }
-
-
-
 
 
 

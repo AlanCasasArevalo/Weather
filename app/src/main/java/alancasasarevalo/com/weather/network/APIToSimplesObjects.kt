@@ -10,7 +10,7 @@ class APIToSimplesObjects{
 
         var retrofit: Retrofit? = null
 
-        fun getApiRetrofit() : Retrofit {
+        fun getApiRetrofit() : Retrofit{
             if(retrofit == null){
                 retrofit = Retrofit.Builder()
                         .baseUrl(BASE_URL)
@@ -21,5 +21,5 @@ class APIToSimplesObjects{
             return retrofit!!
         }
     }
-
 }
+
